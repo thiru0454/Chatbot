@@ -95,29 +95,32 @@ def main():
                 st.markdown(f"<div style='text-align: left; color: blue;'><strong>You:</strong> {message[5:]}</div>", unsafe_allow_html=True)
             else:
                 st.markdown(f"<div style='text-align: right; color: green;'><strong>Chatbot:</strong> {message[10:]}</div>", unsafe_allow_html=True)
-    
+
     # Create space to place the chat input box at the bottom
     st.markdown("<br><br><br>", unsafe_allow_html=True)
 
-    # Create a text input box for user input (no send button)
-    user_input = st.text_input("", value=st.session_state.user_input, key="input", label_visibility="hidden")
+    # Create the chat input box with the send button inside the box (like ChatGPT)
+    user_input = st.text_input("", value=st.session_state.user_input, key="input", label_visibility="hidden", placeholder="Type your message...")
+
+    # Add send button next to the input field
+    send_button = st.button("Send", key="send_button", use_container_width=True)
 
     # Display a typing indicator when the chatbot is generating a response
     if st.session_state.history and st.session_state.history[-1].startswith("Chatbot:"):
         st.markdown("<div style='text-align: right; color: gray;'>Chatbot is typing...</div>", unsafe_allow_html=True)
 
-    # Check if the user has entered text and hit "Enter"
-    if user_input:
+    # Check if the send button is pressed or the user hits "Enter"
+    if user_input and send_button:
         # Simulate typing delay
         time.sleep(1)  # Simulate a delay before sending response
 
         # Get the chatbot response
         response = chatbot_response(user_input, intents)
-        
+
         # Append the user input and chatbot response to history
         st.session_state.history.append(f"You: {user_input}")
         st.session_state.history.append(f"Chatbot: {response}")
-        
+
         # Clear the user input after the message is sent
         st.session_state.user_input = ""
 
