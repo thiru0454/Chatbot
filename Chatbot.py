@@ -1,128 +1,150 @@
 import streamlit as st
-import random
-import json
 import time
 
-# Embedding the JSON data inside the Python script
-intents_data = {
-    "intents": [
-        {
-            "tag": "greeting",
-            "patterns": [
-                "Hi",
-                "Hello",
-                "Hey",
-                "How are you?",
-                "How's it going?",
-                "What's up?",
-                "Good morning",
-                "Good afternoon",
-                "Good evening"
-            ],
-            "responses": [
-                "Hello!",
-                "Hi there!",
-                "Hey, how can I help you?",
-                "Good to see you!",
-                "Hi! How are you?"
-            ]
-        },
-        {
-            "tag": "goodbye",
-            "patterns": [
-                "Bye",
-                "Goodbye",
-                "See you later",
-                "Take care",
-                "Have a great day"
-            ],
-            "responses": [
-                "Goodbye!",
-                "See you later!",
-                "Take care!",
-                "Have a great day!"
-            ]
+# HTML + CSS + JS for chatbot UI
+chatbot_html = """
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chatbot</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
         }
-    ]
-}
+        .chat-container {
+            background-color: white;
+            width: 400px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .chat-box {
+            height: 300px;
+            overflow-y: auto;
+            border: 1px solid #ccc;
+            padding: 10px;
+            border-radius: 8px;
+            background-color: #f9f9f9;
+        }
+        .input-container {
+            display: flex;
+            align-items: center;
+            width: 100%;
+        }
+        #user-input {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+        .send-btn {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            padding: 10px;
+            cursor: pointer;
+            font-size: 18px;
+            margin-left: 10px;
+        }
+        .send-btn:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
+    <div class="chat-container">
+        <div class="chat-box" id="chat-box">
+            <!-- Chat messages will appear here -->
+        </div>
+        <div class="input-container">
+            <input type="text" id="user-input" placeholder="Ask something..." />
+            <button class="send-btn" onclick="sendMessage()">
+                <span>&rarr;</span>
+            </button>
+        </div>
+    </div>
 
-# Load intents directly from the embedded JSON data
-def load_intents():
-    return intents_data['intents']  # Access the list under the 'intents' key
+    <script>
+        function sendMessage() {
+            const userInput = document.getElementById('user-input').value;
+            const chatBox = document.getElementById('chat-box');
+            
+            if (userInput.trim() !== "") {
+                chatBox.innerHTML += `<div><b>You:</b> ${userInput}</div>`;
+                
+                // Send message to Python backend and get response
+                fetch('/send_message', {
+                    method: 'POST',
+                    body: JSON.stringify({ message: userInput }),
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                }).then(response => response.json()).then(data => {
+                    chatBox.innerHTML += `<div><b>Bot:</b> ${data.response}</div>`;
+                    chatBox.scrollTop = chatBox.scrollHeight;
+                    document.getElementById('user-input').value = "";
+                });
+            }
+        }
+    </script>
+</body>
+</html>
+"""
 
-# Simple keyword matching
-def match_keywords(user_input, patterns):
-    user_input = user_input.lower()  # Convert user input to lowercase
-    for pattern in patterns:
-        if pattern.lower() in user_input:
-            return True
-    return False
+# Chatbot logic for Python backend
+def chatbot_response(user_message):
+    user_message = user_message.lower()
 
-# Get response based on tag
-def get_response(tag, intents):
-    for intent in intents:
-        if intent['tag'] == tag:
-            return random.choice(intent['responses'])
+    if "hello" in user_message or "hi" in user_message:
+        return "Hi there! How can I assist you today?"
+    elif "how are you" in user_message:
+        return "I'm doing well, thank you for asking! How can I help you?"
+    elif "good morning" in user_message:
+        return "Good morning! How are you today?"
+    elif "good evening" in user_message:
+        return "Good evening! How can I help you?"
+    elif "hey" in user_message:
+        return "Hey! What's up?"
+    elif "what's up" in user_message or "what's going on" in user_message:
+        return "Not much, just here to help you!"
+    else:
+        return "I'm sorry, I didn't quite understand that. Could you please rephrase?"
 
-# Generate chatbot response
-def chatbot_response(user_input, intents):
-    for intent in intents:
-        if match_keywords(user_input, intent['patterns']):
-            return get_response(intent['tag'], intents)
-    return "I'm sorry, I didn't understand that. Can you rephrase?"
+# Streamlit app layout and functionality
+st.title("Chatbot Application")
 
-# Streamlit UI
-def main():
-    st.set_page_config(page_title="Chatbot", page_icon="🤖", layout="wide")
-    st.title("Chatbot")
+# Show the chatbot UI
+st.markdown(chatbot_html, unsafe_allow_html=True)
 
-    # Load intents
-    intents = load_intents()
+# Handle incoming user message and return chatbot response
+import json
+from flask import Flask, request, jsonify
 
-    # Initialize session state for conversation history if not already initialized
-    if 'history' not in st.session_state:
-        st.session_state.history = []
-    if 'user_input' not in st.session_state:
-        st.session_state.user_input = ""
+# Initialize Flask app to handle requests
+app = Flask(__name__)
 
-    # Create a container for the chat history
-    chat_box = st.container()
+@app.route('/send_message', methods=['POST'])
+def handle_message():
+    data = request.get_json()
+    user_message = data.get('message')
+    
+    # Get the chatbot response from Python
+    response = chatbot_response(user_message)
+    
+    return jsonify({"response": response})
 
-    # Display the entire conversation history (chat messages)
-    with chat_box:
-        for message in st.session_state.history:
-            if message.startswith("You:"):
-                st.markdown(f"<div style='text-align: left; color: blue;'><strong>You:</strong> {message[5:]}</div>", unsafe_allow_html=True)
-            else:
-                st.markdown(f"<div style='text-align: right; color: green;'><strong>Chatbot:</strong> {message[10:]}</div>", unsafe_allow_html=True)
-
-    # Create space to place the chat input box at the bottom
-    st.markdown("<br><br><br>", unsafe_allow_html=True)
-
-    # Create the chat input box with the send button inside the box (like ChatGPT)
-    user_input = st.text_input("", value=st.session_state.user_input, key="input", label_visibility="hidden", placeholder="Type your message...")
-
-    # Add send button next to the input field
-    send_button = st.button("Send", key="send_button", use_container_width=True)
-
-    # Display a typing indicator when the chatbot is generating a response
-    if st.session_state.history and st.session_state.history[-1].startswith("Chatbot:"):
-        st.markdown("<div style='text-align: right; color: gray;'>Chatbot is typing...</div>", unsafe_allow_html=True)
-
-    # Check if the send button is pressed or the user hits "Enter"
-    if user_input and send_button:
-        # Simulate typing delay
-        time.sleep(1)  # Simulate a delay before sending response
-
-        # Get the chatbot response
-        response = chatbot_response(user_input, intents)
-
-        # Append the user input and chatbot response to history
-        st.session_state.history.append(f"You: {user_input}")
-        st.session_state.history.append(f"Chatbot: {response}")
-
-        # Clear the user input after the message is sent
-        st.session_state.user_input = ""
-
-if __name__ == "__main__":
-    main()
+if __name__ == '__main__':
+    app.run(debug=True, port=8501)
