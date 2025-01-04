@@ -2,8 +2,7 @@ import streamlit as st
 import random
 import numpy as np
 import json
-from sklearn.feature_extraction.text import CountVectorizer
-from sklearn.metrics.pairwise import cosine_similarity
+import re
 
 # Load intents from JSON file
 def load_intents():
@@ -20,27 +19,41 @@ def preprocess_intents(intents):
             tags.append(intent['tag'])
     return patterns, tags
 
+# Tokenize a sentence (remove non-alphabetic characters and split by spaces)
+def tokenize(sentence):
+    sentence = re.sub(r'[^\w\s]', '', sentence)
+    return sentence.split()
+
+# Calculate cosine similarity manually
+def cosine_similarity_manual(v1, v2):
+    intersection = set(v1) & set(v2)
+    return len(intersection) / (np.sqrt(len(v1)) * np.sqrt(len(v2)))
+
+# Generate chatbot response
+def chatbot_response(user_input, patterns, tags, intents):
+    user_input_tokens = tokenize(user_input.lower())
+    
+    max_similarity = 0
+    best_tag = None
+
+    for pattern, tag in zip(patterns, tags):
+        pattern_tokens = tokenize(pattern)
+        similarity = cosine_similarity_manual(user_input_tokens, pattern_tokens)
+        
+        if similarity > max_similarity:
+            max_similarity = similarity
+            best_tag = tag
+
+    if max_similarity > 0.2:  # Threshold for valid response
+        return get_response(best_tag, intents)
+    else:
+        return "I'm sorry, I didn't understand that. Can you rephrase?"
+
 # Get response based on tag
 def get_response(tag, intents):
     for intent in intents:
         if intent['tag'] == tag:
             return random.choice(intent['responses'])
-
-# Generate chatbot response
-def chatbot_response(user_input, patterns, tags, intents, vectorizer):
-    # Transform user input
-    user_vector = vectorizer.transform([user_input.lower()])
-    pattern_vectors = vectorizer.transform(patterns)
-    
-    # Calculate similarity
-    similarities = cosine_similarity(user_vector, pattern_vectors)
-    index = np.argmax(similarities)
-    
-    if similarities[0][index] > 0.2:  # Threshold for valid response
-        tag = tags[index]
-        return get_response(tag, intents)
-    else:
-        return "I'm sorry, I didn't understand that. Can you rephrase?"
 
 # Streamlit UI
 def main():
@@ -51,14 +64,10 @@ def main():
     intents = load_intents()
     patterns, tags = preprocess_intents(intents)
     
-    # Initialize vectorizer
-    vectorizer = CountVectorizer()
-    vectorizer.fit(patterns)
-    
     # Chatbox interaction
     user_input = st.text_input("You:", "")
     if user_input:
-        response = chatbot_response(user_input, patterns, tags, intents, vectorizer)
+        response = chatbot_response(user_input, patterns, tags, intents)
         st.text_area("Chatbot:", value=response, height=100, max_chars=None, key=None)
     
     st.write("Type your query above and press Enter.")
