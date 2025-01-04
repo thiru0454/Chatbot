@@ -3,10 +3,51 @@ import random
 import json
 import time
 
-# Load intents from the 'intents.json' file
+# Embedding the JSON data inside the Python script
+intents_data = {
+    "intents": [
+        {
+            "tag": "greeting",
+            "patterns": [
+                "Hi",
+                "Hello",
+                "Hey",
+                "How are you?",
+                "How's it going?",
+                "What's up?",
+                "Good morning",
+                "Good afternoon",
+                "Good evening"
+            ],
+            "responses": [
+                "Hello!",
+                "Hi there!",
+                "Hey, how can I help you?",
+                "Good to see you!",
+                "Hi! How are you?"
+            ]
+        },
+        {
+            "tag": "goodbye",
+            "patterns": [
+                "Bye",
+                "Goodbye",
+                "See you later",
+                "Take care",
+                "Have a great day"
+            ],
+            "responses": [
+                "Goodbye!",
+                "See you later!",
+                "Take care!",
+                "Have a great day!"
+            ]
+        }
+    ]
+}
+
+# Load intents directly from the embedded JSON data
 def load_intents():
-    with open("intents.json", "r") as file:
-        intents_data = json.load(file)  # Load the JSON content
     return intents_data['intents']  # Access the list under the 'intents' key
 
 # Simple keyword matching
@@ -58,21 +99,15 @@ def main():
     # Create space to place the chat input box at the bottom
     st.markdown("<br><br><br>", unsafe_allow_html=True)
 
-    # Create columns to display the text input and button together (like ChatGPT)
-    col1, col2 = st.columns([8, 1])  # Adjust column sizes (8: input box, 1: button)
-
-    with col1:
-        user_input = st.text_input("", value=st.session_state.user_input, key="input", label_visibility="hidden")
-
-    with col2:
-        send_button = st.button("➡️", key="send_button")
+    # Create a text input box for user input (no send button)
+    user_input = st.text_input("", value=st.session_state.user_input, key="input", label_visibility="hidden")
 
     # Display a typing indicator when the chatbot is generating a response
     if st.session_state.history and st.session_state.history[-1].startswith("Chatbot:"):
         st.markdown("<div style='text-align: right; color: gray;'>Chatbot is typing...</div>", unsafe_allow_html=True)
 
-    # Check if the button is pressed or the user hits "Enter"
-    if (user_input and send_button) or user_input:
+    # Check if the user has entered text and hit "Enter"
+    if user_input:
         # Simulate typing delay
         time.sleep(1)  # Simulate a delay before sending response
 
@@ -87,4 +122,4 @@ def main():
         st.session_state.user_input = ""
 
 if __name__ == "__main__":
-    main() 
+    main()
