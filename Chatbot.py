@@ -125,8 +125,8 @@ chatbot_html = """
             if (userInput.trim() !== "") {
                 chatBox.innerHTML += `<div><b>You:</b> ${userInput}</div>`;
                 
-                // Send message to Python backend and get response
-                fetch('/send_message', {
+                // Send message to Streamlit backend and get response
+                fetch('/chat', {
                     method: 'POST',
                     body: JSON.stringify({ message: userInput }),
                     headers: {
@@ -147,18 +147,32 @@ chatbot_html = """
 # Display the chatbot UI using Streamlit markdown
 st.markdown(chatbot_html, unsafe_allow_html=True)
 
-# Handle the message and bot response
-from flask import Flask, request, jsonify
+# Backend logic: handle user input and generate bot response
+import json
 
-app = Flask(__name__)
+# Function to handle user input
+def handle_message(user_input):
+    # Get the response from the chatbot
+    response = chatbot_response(user_input)
+    return response
 
-@app.route('/send_message', methods=['POST'])
-def handle_message():
-    data = request.get_json()
-    user_input = data.get('message')
-    bot_response = chatbot_response(user_input)
-    return jsonify({'response': bot_response})
+# Handle the user input using Streamlit's session state
+if 'messages' not in st.session_state:
+    st.session_state['messages'] = []
 
-# Run the Flask app within Streamlit (for local testing)
-if __name__ == '__main__':
-    app.run(port=8501, debug=True)
+# Capture and display messages
+if st.session_state.get('user_message', None):
+    user_input = st.session_state['user_message']
+    bot_response = handle_message(user_input)
+    st.session_state['messages'].append(f"You: {user_input}")
+    st.session_state['messages'].append(f"Bot: {bot_response}")
+
+# Show all messages
+for message in st.session_state['messages']:
+    st.write(message)
+
+# Simulate the backend for the frontend communication
+if st.button("Send"):
+    message = st.text_input("Your message: ", "")
+    if message:
+        st.session_state['user_message'] = message
