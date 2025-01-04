@@ -2,18 +2,40 @@
   "intents": [
     {
       "tag": "greeting",
-      "patterns": ["Hi", "Hello", "How are you?"],
-      "responses": ["Hello!", "Hi there!", "How can I help you?"]
+      "patterns": [
+        "Hi",
+        "Hello",
+        "Hey",
+        "How are you?",
+        "How's it going?",
+        "What's up?",
+        "Good morning",
+        "Good afternoon",
+        "Good evening",
+        "Howdy",
+        "Greetings",
+        "Yo"
+      ],
+      "responses": [
+        "Hello!",
+        "Hi there!",
+        "Hey, how can I help you?",
+        "Good to see you!",
+        "Hi! How are you?",
+        "Hello! How's it going?",
+        "Hey there! What can I do for you today?",
+        "Good morning! How can I assist you?"
+      ]
     },
     {
       "tag": "goodbye",
-      "patterns": ["Bye", "Goodbye", "See you later"],
-      "responses": ["Goodbye!", "See you later!", "Have a great day!"]
+      "patterns": ["Bye", "Goodbye", "See you later", "Take care", "Have a great day", "See you soon"],
+      "responses": ["Goodbye!", "See you later!", "Take care!", "Have a great day!", "Catch you later!"]
     },
     {
       "tag": "thanks",
-      "patterns": ["Thanks", "Thank you", "Thanks a lot"],
-      "responses": ["You're welcome!", "Happy to help!", "Anytime!"]
+      "patterns": ["Thanks", "Thank you", "Thanks a lot", "I appreciate it", "Many thanks"],
+      "responses": ["You're welcome!", "Happy to help!", "Anytime!", "No problem!", "Glad I could help!"]
     }
   ]
 }
