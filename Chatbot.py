@@ -40,20 +40,13 @@ def main():
     # Initialize session state for conversation history if not already initialized
     if 'history' not in st.session_state:
         st.session_state.history = []
+    if 'user_input' not in st.session_state:
+        st.session_state.user_input = ""
 
-    # Chatbox interaction
-    user_input = st.text_input("You:", "")
-
-    if user_input:
-        # Get the chatbot response
-        response = chatbot_response(user_input, intents)
-        
-        # Append the user input and chatbot response to history
-        st.session_state.history.append(f"You: {user_input}")
-        st.session_state.history.append(f"Chatbot: {response}")
-    
-    # Display the entire conversation history
+    # Create a container for the chat history
     chat_box = st.container()
+
+    # Display the entire conversation history
     with chat_box:
         for message in st.session_state.history:
             if message.startswith("You:"):
@@ -61,5 +54,29 @@ def main():
             else:
                 st.markdown(f"**Chatbot:** {message[10:]}")
     
+    # Create a space to place the chat input box at the bottom
+    st.markdown("<br><br><br>", unsafe_allow_html=True)  # Add space between chat and input
+
+    # Create columns to display the text input and button together
+    col1, col2 = st.columns([8, 1])  # Adjust column sizes (8: input box, 1: button)
+
+    with col1:
+        user_input = st.text_input("", value=st.session_state.user_input, key="input", label_visibility="hidden")
+
+    with col2:
+        send_button = st.button("➡️", key="send_button")
+
+    # Check if the button is pressed or the user hits "Enter"
+    if (user_input and send_button) or user_input:
+        # Get the chatbot response
+        response = chatbot_response(user_input, intents)
+        
+        # Append the user input and chatbot response to history
+        st.session_state.history.append(f"You: {user_input}")
+        st.session_state.history.append(f"Chatbot: {response}")
+        
+        # Clear the user input after the message is sent
+        st.session_state.user_input = ""
+
 if __name__ == "__main__":
     main()
