@@ -19,7 +19,14 @@ def chatbot_response(user_message):
     else:
         return "I'm sorry, I didn't quite understand that. Could you please rephrase?"
 
-# HTML, CSS, and JS for chatbot UI
+# Streamlit app layout and functionality
+st.title("Chatbot Application")
+
+# Initialize session state for messages if not already initialized
+if 'messages' not in st.session_state:
+    st.session_state['messages'] = []
+
+# HTML, CSS, and JS for chatbot UI (Responsive)
 chatbot_html = """
 <!DOCTYPE html>
 <html lang="en">
@@ -30,25 +37,28 @@ chatbot_html = """
     <style>
         body {
             font-family: Arial, sans-serif;
+            margin: 0;
+            background-color: #f0f0f0;
             display: flex;
             justify-content: center;
             align-items: center;
             height: 100vh;
-            margin: 0;
-            background-color: #f0f0f0;
         }
         .chat-container {
             background-color: white;
-            width: 400px;
+            width: 100%;
+            max-width: 450px;
             border-radius: 8px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
             padding: 20px;
             display: flex;
             flex-direction: column;
             gap: 10px;
+            height: 80%;
+            max-height: 600px;
         }
         .chat-box {
-            height: 300px;
+            flex: 1;
             overflow-y: auto;
             border: 1px solid #ccc;
             padding: 10px;
@@ -79,6 +89,24 @@ chatbot_html = """
         }
         .send-btn:hover {
             background-color: #45a049;
+        }
+
+        /* Media query for smaller screens */
+        @media (max-width: 600px) {
+            .chat-container {
+                width: 90%;
+                padding: 10px;
+            }
+            .input-container {
+                flex-direction: column;
+            }
+            #user-input {
+                margin-bottom: 10px;
+            }
+            .send-btn {
+                margin-left: 0;
+                width: 100%;
+            }
         }
     </style>
 </head>
@@ -122,10 +150,7 @@ chatbot_html = """
 </html>
 """
 
-# Streamlit app layout and functionality
-st.title("Chatbot Application")
-
-# Display chatbot UI with HTML, CSS, and JS
+# Display the chatbot UI using Streamlit markdown
 st.markdown(chatbot_html, unsafe_allow_html=True)
 
 # Handle user input and send message to backend
@@ -136,7 +161,11 @@ def handle_message(user_input):
     response = chatbot_response(user_input)
     return response
 
-# Streamlit text input and interaction
+# Handle the message and show bot response in Streamlit
+if 'messages' not in st.session_state:
+    st.session_state['messages'] = []
+
+# Handle the user input and bot response
 if st.text_input("You: ", key="user_input"):
     user_input = st.session_state.user_input
     bot_response = handle_message(user_input)
