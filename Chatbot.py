@@ -1,13 +1,11 @@
 import streamlit as st
 import random
 import json
-import re
 
 # Load intents from the 'intents.json' file
 def load_intents():
     with open("intents.json", "r") as file:
         intents_data = json.load(file)  # Load the JSON content
-    print(intents_data)  # Print the loaded data for debugging
     return intents_data['intents']  # Access the list under the 'intents' key
 
 # Simple keyword matching
@@ -34,7 +32,6 @@ def chatbot_response(user_input, intents):
 # Streamlit UI
 def main():
     st.set_page_config(page_title="Chatbot", page_icon="🤖", layout="wide")
-    
     st.title("Chatbot")
 
     # Load intents
@@ -64,8 +61,5 @@ def main():
             else:
                 st.markdown(f"**Chatbot:** {message[10:]}")
     
-    # Input box for the user to type
-    st.text_input("Type your message", key="message")
-
 if __name__ == "__main__":
     main()
