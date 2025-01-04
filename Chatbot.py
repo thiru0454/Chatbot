@@ -6,8 +6,9 @@ import re
 # Load intents from the 'intents.json' file
 def load_intents():
     with open("intents.json", "r") as file:
-        intents = json.load(file)
-    return intents['intents']
+        intents_data = json.load(file)  # Load the JSON content
+    print(intents_data)  # Print the loaded data for debugging
+    return intents_data['intents']  # Access the list under the 'intents' key
 
 # Simple keyword matching
 def match_keywords(user_input, patterns):
@@ -32,7 +33,7 @@ def chatbot_response(user_input, intents):
 
 # Streamlit UI
 def main():
-    st.set_page_config(page_title="ChatGPT Chatbot", page_icon="🤖", layout="wide")
+    st.set_page_config(page_title="Chatbot", page_icon="🤖", layout="wide")
     
     st.title("Chatbot")
 
