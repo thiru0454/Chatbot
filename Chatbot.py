@@ -1,4 +1,5 @@
 import streamlit as st
+import json
 
 # Chatbot logic for backend response
 def chatbot_response(user_message):
@@ -18,13 +19,6 @@ def chatbot_response(user_message):
         return "Not much, just here to help you!"
     else:
         return "I'm sorry, I didn't quite understand that. Could you please rephrase?"
-
-# Streamlit app layout and functionality
-st.title("Chatbot Application")
-
-# Initialize session state for messages if not already initialized
-if 'messages' not in st.session_state:
-    st.session_state['messages'] = []
 
 # HTML, CSS, and JS for chatbot UI (Responsive)
 chatbot_html = """
@@ -153,25 +147,18 @@ chatbot_html = """
 # Display the chatbot UI using Streamlit markdown
 st.markdown(chatbot_html, unsafe_allow_html=True)
 
-# Handle user input and send message to backend
-import json
+# Handle the message and bot response
+from flask import Flask, request, jsonify
 
-def handle_message(user_input):
-    # Get the response from the chatbot
-    response = chatbot_response(user_input)
-    return response
+app = Flask(__name__)
 
-# Handle the message and show bot response in Streamlit
-if 'messages' not in st.session_state:
-    st.session_state['messages'] = []
+@app.route('/send_message', methods=['POST'])
+def handle_message():
+    data = request.get_json()
+    user_input = data.get('message')
+    bot_response = chatbot_response(user_input)
+    return jsonify({'response': bot_response})
 
-# Handle the user input and bot response
-if st.text_input("You: ", key="user_input"):
-    user_input = st.session_state.user_input
-    bot_response = handle_message(user_input)
-    st.session_state.messages.append(f"You: {user_input}")
-    st.session_state.messages.append(f"Bot: {bot_response}")
-
-# Show all messages
-for message in st.session_state.messages:
-    st.write(message)
+# Run the Flask app within Streamlit (for local testing)
+if __name__ == '__main__':
+    app.run(port=8501, debug=True)
