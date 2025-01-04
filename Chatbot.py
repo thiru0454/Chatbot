@@ -1,28 +1,14 @@
 import streamlit as st
 import random
 import numpy as np
+import json
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 
-# Embed intents.json data directly in the script
-intents = [
-    {
-        "tag": "greeting",
-        "patterns": ["Hi", "Hello", "Hey", "How are you", "What's up"],
-        "responses": ["Hi there", "Hello", "Hey", "I'm fine, thank you", "Nothing much"]
-    },
-    {
-        "tag": "goodbye",
-        "patterns": ["Bye", "See you later", "Goodbye", "Take care"],
-        "responses": ["Goodbye", "See you later", "Take care"]
-    },
-    {
-        "tag": "thanks",
-        "patterns": ["Thank you", "Thanks", "Thanks a lot", "I appreciate it"],
-        "responses": ["You're welcome", "No problem", "Glad I could help"]
-    }
-    # Add more intents here as needed
-]
+# Load intents from JSON file
+def load_intents():
+    with open('intents.json', 'r') as file:
+        return json.load(file)
 
 # Preprocess patterns and tags
 def preprocess_intents(intents):
@@ -61,7 +47,8 @@ def main():
     st.title("Chatbot")
     st.write("Hi! I'm your chatbot. How can I assist you today?")
     
-    # Preprocess intents
+    # Load and preprocess intents
+    intents = load_intents()
     patterns, tags = preprocess_intents(intents)
     
     # Initialize vectorizer
